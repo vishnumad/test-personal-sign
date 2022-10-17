@@ -1,37 +1,23 @@
-import ethSigUtil from "eth-sig-util";
-import { utils } from "ethers";
+import { providers } from "ethers";
 
-const provider = window.ethereum;
+async function test_get_code() {
+  const ethersProvider = new providers.Web3Provider(window.ethereum);
 
-async function personal_sign() {
-  const [address] = await provider.request({ method: "eth_requestAccounts" });
-
-  const messageBytes = utils.toUtf8Bytes(
-    `Hello World! - ${new Date().getTime()}`
-  );
-  const hexMessage = utils.hexlify(messageBytes);
-
-  const signature = await provider.request({
-    method: "personal_sign",
-    params: [hexMessage, address],
+  // Switch to Goerli
+  await ethersProvider.provider.request({
+    method: "wallet_switchEthereumChain",
+    params: [{ chainId: "0x5" }],
   });
 
-  const recoveredAddress = ethSigUtil.recoverPersonalSignature({
-    data: hexMessage,
-    sig: signature,
-  });
-
-  window.alert(
-    `Signature: ${signature} \nRecovered Address: ${recoveredAddress} \nActual Address: ${address}`
+  const code = await ethersProvider.getCode(
+    "0xB98B658223Fc9D3F166613E938C169fcFCE55d37"
   );
+
+  console.log("Code:", code);
 }
 
-// personal sign on page load
-personal_sign();
-
-// personal sign on button press
 document.getElementById("sign_button").onclick = () => {
-  personal_sign();
+  test_get_code();
 };
 
 export {};
